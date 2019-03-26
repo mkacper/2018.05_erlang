@@ -21,6 +21,13 @@ init([]) ->
     SensorId = get_sensor_id(),
     SupFlags = #{strategy => one_for_one, intensity => 1, period => 5},
     ChildSpecs = [
+                  %% start rolnik alarmer
+                  #{id => rolnik_alarmer_id,
+                    start => {rolnik_alarmer, start_link, [[15, 28, 10, 0.5]]},
+                    restart => permanent,
+                    shutdown => brutal_kill,
+                    type => worker,
+                    modules => [rolnik_alarmer]},
                   %% start rolnik_temp_checker
                   #{id => rolnik_temp_checker_id,
                     start => {rolnik_temp_checker, start_link, [[1000, SensorId]]},

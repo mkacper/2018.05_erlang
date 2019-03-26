@@ -42,8 +42,8 @@ handle_cast(_Msg, State) ->
 handle_info(temp_update, State = #state{temp_check_freq = Lag, sensor_id = Id}) ->
     ok = request_temp_update_after_lag(Lag),
     {ok, NewTemp} = get_temp(Id),
-%    ok = temp_notify(NewTemp),
-    report_temp(NewTemp),
+    report_temp_to_alarmer(NewTemp),
+    report_temp_to_server(NewTemp),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -66,7 +66,7 @@ get_temp(Id) ->
     Temp = onewire_ds18b20:temp(Id),
     {ok, Temp}.
 
-report_temp(Temp) ->
+report_temp_to_server(Temp) ->
     exometer:update(?TEMP, Temp).
 
 init_metrics() ->
@@ -74,8 +74,5 @@ init_metrics() ->
     Datapoints = [mean, min, max, median, 95, 99, 999],
     exometer_report:subscribe(exometer_report_graphite, ?TEMP, Datapoints, 10000).
 
-%temp_notify(Temp) ->
-%    Time = erlang:localtime(),
-%    TimeTempData = {Time, Temp},
-%    gen_event:notify(rolnik_temp_notify_manager, TimeTempData),
-%    ok.
+report_temp_to_alarmer(Temp) ->
+    rolnik_alarmer:report_temp(Temp).
