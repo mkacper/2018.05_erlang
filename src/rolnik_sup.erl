@@ -16,4 +16,22 @@ start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %--- Callbacks -----------------------------------------------------------------
 
-init([]) -> {ok, { {one_for_all, 0, 1}, []} }.
+init([]) ->
+%   {ok, TempCheckFreq} = application:get_env(rolnik, temp_check_freq),
+    SensorId = get_sensor_id(),
+    SupFlags = #{strategy => one_for_one, intensity => 1, period => 5},
+    ChildSpecs = [
+                  %% start rolnik_temp_checker
+                  #{id => rolnik_temp_checker_id,
+                    start => {rolnik_temp_checker, start_link, [[1000, SensorId]]},
+                    restart => permanent,
+                    shutdown => brutal_kill,
+                    type => worker,
+                    modules => [rolnik_temp_checker]}
+                 ],
+    {ok, {SupFlags, ChildSpecs}}.
+%% Internal functions
+
+get_sensor_id() ->
+    [ID] = grisp_onewire:transaction(fun() -> grisp_onewire:search() end),
+    ID.
