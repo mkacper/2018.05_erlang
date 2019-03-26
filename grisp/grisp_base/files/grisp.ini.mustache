@@ -2,10 +2,10 @@
 image_path = /media/mmcsd-0-0/rolnik/erts-10.0/bin/beam.bin
 
 [erlang]
-args = erl.rtems -- -home . -pa . -root rolnik -boot rolnik/releases/0.1.0/rolnik -internal_epmd epmd_sup -kernel inetrc "./erl_inetrc" -sname name -setcookie cookie
+args = erl.rtems -- -home . -pa . -root rolnik -boot rolnik/releases/0.1.0/rolnik -internal_epmd epmd_sup -kernel inetrc "./erl_inetrc" -sname name -setcookie cookie -config {{release_name}}/releases/{{release_version}}/sys.config
 
 [network]
 ip_self = dhcp
 wlan = enable
-hostname = board
+hostname = grisp_board
 wpa = wpa_supplicant.conf
