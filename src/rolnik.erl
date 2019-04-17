@@ -10,6 +10,14 @@
 
 %--- Callbacks -----------------------------------------------------------------
 
-start(_Type, _Args) -> rolnik_sup:start_link().
+start(_Type, _Args) ->
+    start_http_server(),
+    rolnik_sup:start_link().
 
 stop(_State) -> ok.
+
+start_http_server() ->
+    Dispatch = cowboy_router:compile([{'_', [{"/config",
+                                              rolnik_config_handler, []}]}]),
+    {ok, _} = cowboy:start_clear(http, [{port, 8000}],
+                                 #{env => #{dispatch => Dispatch}}).

@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/1, report_temp/1]).
+-export([start_link/1, report_temp/1, set_limits/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -17,6 +17,9 @@ start_link(Args) ->
 
 report_temp(Temp) ->
     gen_server:call(?MODULE, Temp).
+
+set_limits(Upper, Lower) ->
+    gen_server:call(?MODULE, {set_limits, Upper, Lower}).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 init([LowerLimit, UpperLimit, ChecksPerSample, StatusReturnLimit]) ->
@@ -24,6 +27,8 @@ init([LowerLimit, UpperLimit, ChecksPerSample, StatusReturnLimit]) ->
                 checks_per_sample = ChecksPerSample,
                 status_return_limit = StatusReturnLimit}}.
 
+handle_call({set_limits, Upper, Lower}, _From, State) ->
+    {reply, ok, State#state{upper_limit = Upper, lower_limit = Lower}};
 handle_call(Temp, _From, State = #state{current_temp_status = CurrStatus,
                                            current_sample_temps = Temps,
                                            checks_per_sample = ChecksPerSample})
